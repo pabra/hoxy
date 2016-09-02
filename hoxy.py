@@ -59,7 +59,14 @@ class ForkingHTTPServer(ForkingMixIn, HTTPServer):
 
         if proxy_target.scheme == 'https':
             # disable client ssl verification
-            ssl._create_default_https_context = ssl._create_unverified_context
+            try:
+                _create_unverified_https_context = ssl._create_unverified_context
+            except AttributeError:
+                # Legacy Python that doesn't verify HTTPS certificates by default
+                pass
+            else:
+                # Handle target environment that doesn't support HTTPS verification
+                ssl._create_default_https_context = _create_unverified_https_context
 
         self.proxy_target = proxy_target
         self.host_header = host_header
